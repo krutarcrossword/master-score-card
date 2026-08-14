@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MASTER SCORE CARD BY KRUTAR CROSSWORD</title>
+  <link rel="preconnect" href="https://cdn.jsdelivr.net">
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="app-header">
+    <div>
+      <h1>MASTER SCORE CARD</h1>
+      <p>BY KRUTAR CROSSWORD</p>
+    </div>
+    <div class="header-actions no-print">
+      <button id="langBtn" class="btn secondary">TH / EN</button>
+      <button id="themeBtn" class="btn secondary">🌙</button>
+      <button id="settingsBtn" class="btn secondary">⚙ Settings</button>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="panel">
+      <div class="panel-title">
+        <h2 data-i18n="sessionInfo">Session Information</h2>
+        <span id="saveBadge" class="badge draft">DRAFT</span>
+      </div>
+
+      <div class="form-grid">
+        <label>
+          <span data-i18n="sessionType">Session Type</span>
+          <select id="sessionType">
+            <option value="TRAINING">Training</option>
+            <option value="TOURNAMENT_RATED">Rated Tournament</option>
+            <option value="TOURNAMENT_UNRATED">Unrated Tournament</option>
+          </select>
+        </label>
+        <label>
+          <span data-i18n="tournamentName">Tournament / Training Name</span>
+          <input id="tournamentName" type="text" />
+        </label>
+        <label>
+          <span data-i18n="playerName">Player Name</span>
+          <input id="playerName" type="text" />
+        </label>
+        <label>
+          <span data-i18n="division">Division</span>
+          <input id="division" type="text" />
+        </label>
+        <label>
+          <span data-i18n="venue">Venue</span>
+          <input id="venue" type="text" />
+        </label>
+        <label>
+          <span data-i18n="startDate">Start Date</span>
+          <input id="startDate" type="date" />
+        </label>
+        <label>
+          <span data-i18n="endDate">End Date</span>
+          <input id="endDate" type="date" />
+        </label>
+        <label>
+          <span data-i18n="numberGames">Number of Games</span>
+          <input id="numberGames" type="number" min="1" max="100" value="4" />
+        </label>
+      </div>
+
+      <div class="toolbar no-print">
+        <button id="addGameBtn" class="btn success">＋ Add Game</button>
+        <button id="deleteLastBtn" class="btn danger">🗑 Delete Last</button>
+        <button id="approveBtn" class="btn approve">✅ APPROVE & SUBMIT</button>
+        <button id="newSessionBtn" class="btn secondary">🆕 New Session</button>
+        <button id="saveBtn" class="btn primary">Save Local</button>
+        <button id="loadBtn" class="btn primary">Load Local</button>
+        <button id="exportCsvBtn" class="btn primary">Export CSV</button>
+        <button id="exportJsonBtn" class="btn primary">Export JSON</button>
+        <label class="btn primary file-label">Import JSON<input id="importJsonInput" type="file" accept=".json,application/json" hidden></label>
+        <button id="printBtn" class="btn secondary">🖨 Print</button>
+      </div>
+
+      <div id="approvalHint" class="hint"></div>
+    </section>
+
+    <section class="panel">
+      <div class="table-wrap">
+        <table id="gamesTable">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>#</th>
+              <th>W/T/L</th>
+              <th>My Score</th>
+              <th>Opp Score</th>
+              <th>Spread</th>
+              <th class="raw-col hidden">Raw Spread</th>
+              <th>My Bingo</th>
+              <th>Opp Bingo</th>
+              <th class="opp-name-col">Opponent</th>
+              <th class="no-print">Select</th>
+            </tr>
+          </thead>
+          <tbody id="gamesBody"></tbody>
+        </table>
+      </div>
+      <div class="no-print">
+        <button id="deleteSelectedBtn" class="btn danger">Delete Selected Game</button>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2 data-i18n="summary">Tournament / Training Summary</h2>
+      <div id="summaryCards" class="summary-grid"></div>
+    </section>
+
+    <section id="advancedPanel" class="panel">
+      <h2>Advanced Statistics</h2>
+      <div id="advancedCards" class="summary-grid"></div>
+    </section>
+
+    <section id="runningPanel" class="panel">
+      <h2>Running Statistics</h2>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>#</th><th>Cum My</th><th>Cum Opp</th><th>Cum Off Spread</th><th>Cum Raw</th>
+              <th>Cum My Bingo</th><th>Cum Opp Bingo</th><th>Run Avg My</th><th>Run Avg Opp</th>
+              <th>Run Avg Spread</th><th>Run Win %</th>
+            </tr>
+          </thead>
+          <tbody id="runningBody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="chartsPanel" class="panel">
+      <h2>Charts</h2>
+      <div class="charts-grid">
+        <div class="chart-card"><canvas id="scoreChart"></canvas></div>
+        <div class="chart-card"><canvas id="spreadChart"></canvas></div>
+        <div class="chart-card"><canvas id="runningChart"></canvas></div>
+        <div class="chart-card"><canvas id="bingoChart"></canvas></div>
+      </div>
+    </section>
+
+    <section id="settingsPanel" class="panel settings-panel hidden no-print">
+      <h2>Settings</h2>
+      <div class="form-grid">
+        <label>Language
+          <select id="language">
+            <option value="en">English</option>
+            <option value="th">ไทย</option>
+          </select>
+        </label>
+        <label>Result Format
+          <select id="resultFormat">
+            <option value="short">W/T/L</option>
+            <option value="long">WIN/TIE/LOSE</option>
+          </select>
+        </label>
+        <label>Average Decimal Places
+          <input id="decimalPlaces" type="number" min="0" max="4" value="2" />
+        </label>
+        <label>Show Opponent Name
+          <select id="showOpponent"><option value="yes">Yes</option><option value="no">No</option></select>
+        </label>
+        <label>Show Raw Spread
+          <select id="showRaw"><option value="no">No</option><option value="yes">Yes</option></select>
+        </label>
+        <label>Show Running Statistics
+          <select id="showRunning"><option value="yes">Yes</option><option value="no">No</option></select>
+        </label>
+        <label>Show Charts
+          <select id="showCharts"><option value="yes">Yes</option><option value="no">No</option></select>
+        </label>
+        <label>Print Orientation
+          <select id="printOrientation"><option value="portrait">Portrait</option><option value="landscape">Landscape</option></select>
+        </label>
+        <label>Google Apps Script Web App URL
+          <input id="apiUrl" type="url" placeholder="Paste deployed Web App URL here" />
+        </label>
+        <label>Elo Start Rating
+          <input id="eloStart" type="number" min="1" value="1500" />
+        </label>
+        <label>Elo K-Factor
+          <input id="eloK" type="number" min="1" value="32" />
+        </label>
+      </div>
+      <p class="hint">Training and Unrated Tournament sessions are stored but do not change Elo. Rated Tournament sessions update Elo on approval.</p>
+    </section>
+  </main>
+
+  <footer>MASTER SCORE CARD BY KRUTAR CROSSWORD</footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
