@@ -75,6 +75,64 @@
     }
   </style>
 
+
+<style id="powerTilesCompactPatch">
+  .power-tile-cell, .blank-tile-cell{
+    min-width:0 !important;
+    width:auto !important;
+    padding-left:3px !important;
+    padding-right:3px !important;
+  }
+  .power-tile-cell{max-width:150px !important;}
+  .blank-tile-cell{max-width:78px !important;}
+  .tile-checks{
+    gap:3px !important;
+    justify-content:center !important;
+  }
+  .tile-check{
+    gap:1px !important;
+    font-size:12px !important;
+  }
+  .tile-check input{
+    width:14px !important;
+    height:14px !important;
+  }
+  #gamesTable th:nth-child(9),
+  #gamesTable td:nth-child(9){
+    width:150px !important;
+    min-width:150px !important;
+    max-width:150px !important;
+  }
+  #gamesTable th:nth-child(10),
+  #gamesTable td:nth-child(10){
+    width:78px !important;
+    min-width:78px !important;
+    max-width:78px !important;
+  }
+  @media (max-width:600px){
+    #gamesTable th:nth-child(9),
+    #gamesTable td:nth-child(9),
+    #gamesTable th:nth-child(10),
+    #gamesTable td:nth-child(10){
+      width:100% !important;
+      min-width:0 !important;
+      max-width:none !important;
+    }
+    .tile-checks{
+      justify-content:flex-start !important;
+      gap:10px !important;
+      flex-wrap:wrap !important;
+    }
+    .tile-check{
+      font-size:15px !important;
+    }
+    .tile-check input{
+      width:18px !important;
+      height:18px !important;
+    }
+  }
+</style>
+
 </head>
 <body>
   <header class="app-header">
