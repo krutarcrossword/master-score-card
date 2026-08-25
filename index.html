@@ -6,6 +6,75 @@
   <title>MASTER SCORE CARD BY KRUTAR CROSSWORD</title>
   <link rel="preconnect" href="https://cdn.jsdelivr.net">
   <link rel="stylesheet" href="styles.css" />
+
+  <style id="powerTilesStyles">
+    .power-tile-cell, .blank-tile-cell{
+      white-space:nowrap;
+      min-width:150px;
+      text-align:center;
+    }
+    .blank-tile-cell{min-width:95px}
+    .tile-checks{
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
+      flex-wrap:nowrap;
+    }
+    .tile-check{
+      display:inline-flex;
+      align-items:center;
+      gap:3px;
+      font-weight:700;
+      font-size:13px;
+      cursor:pointer;
+      user-select:none;
+    }
+    .tile-check input{
+      width:16px !important;
+      height:16px !important;
+      min-height:0 !important;
+      margin:0;
+      accent-color:#16a34a;
+    }
+    .tile-stats-title{
+      grid-column:1/-1;
+      font-weight:800;
+      margin:4px 0 0;
+    }
+    @media (max-width:600px){
+      .power-tile-cell, .blank-tile-cell{
+        display:block !important;
+        width:100% !important;
+        min-width:0;
+        padding:7px 0 !important;
+      }
+      .power-tile-cell::before{
+        content:"Power Tiles";
+        display:block;
+        font-weight:700;
+        margin-bottom:5px;
+      }
+      .blank-tile-cell::before{
+        content:"Blanks";
+        display:block;
+        font-weight:700;
+        margin-bottom:5px;
+      }
+      .tile-checks{
+        justify-content:flex-start;
+        gap:16px;
+      }
+      .tile-check{
+        font-size:16px;
+      }
+      .tile-check input{
+        width:20px !important;
+        height:20px !important;
+      }
+    }
+  </style>
+
 </head>
 <body>
   <header class="app-header">
@@ -101,6 +170,8 @@
               <th class="raw-col hidden">Raw Spread</th>
               <th>My Bingo</th>
               <th>Opp Bingo</th>
+              <th>Power Tiles</th>
+              <th>Blanks</th>
               <th class="opp-name-col">Opponent</th>
               <th class="no-print">Select</th>
             </tr>
@@ -196,9 +267,230 @@
     </section>
   </main>
 
-  <footer>MASTER SCORE CARD BY KRUTAR CROSSWORD • v1.0</footer>
+  <footer>MASTER SCORE CARD BY KRUTAR CROSSWORD • v1.1</footer>
 
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
   <script src="app.js"></script>
+
+  <script id="powerTilesV11">
+  (() => {
+    const FLAGS = ["powerJ","powerX","powerQ","powerZ","blank1","blank2"];
+
+    function ensureTileFields(g){
+      if(!g) return;
+      for(const k of FLAGS) if(typeof g[k] !== "boolean") g[k] = false;
+    }
+
+    function ensureAllGames(){
+      try{
+        if(typeof state !== "undefined" && state && Array.isArray(state.games)){
+          state.games.forEach(ensureTileFields);
+        }
+      }catch(e){}
+    }
+
+    function gameIndexFromRow(tr){
+      const any = tr.querySelector("[data-i]");
+      if(any) return Number(any.dataset.i);
+      return Math.max(0, Array.from(tr.parentNode.children).indexOf(tr));
+    }
+
+    function makeCheck(i, field, label){
+      const wrap = document.createElement("label");
+      wrap.className = "tile-check";
+      const cb = document.createElement("input");
+      cb.type = "checkbox";
+      cb.dataset.tileField = field;
+      cb.dataset.i = String(i);
+
+      try{
+        ensureAllGames();
+        cb.checked = !!state.games[i]?.[field];
+      }catch(e){ cb.checked = false; }
+
+      cb.addEventListener("change", () => {
+        try{
+          ensureAllGames();
+          if(state.games[i]){
+            state.games[i][field] = cb.checked;
+            if(typeof autosave === "function") autosave();
+            if(typeof renderSummary === "function") renderSummary();
+          }
+        }catch(e){
+          console.warn("Power tile save failed:", e);
+        }
+      });
+
+      wrap.append(cb, document.createTextNode(label));
+      return wrap;
+    }
+
+    function addTileCells(){
+      const body = document.getElementById("gamesBody");
+      if(!body) return;
+      ensureAllGames();
+
+      body.querySelectorAll("tr").forEach(tr => {
+        if(tr.querySelector(".power-tile-cell")) return;
+
+        const i = gameIndexFromRow(tr);
+        const oppBingoInput = tr.querySelector('[data-f="oppBingo"]');
+        const oppBingoTd = oppBingoInput ? oppBingoInput.closest("td") : null;
+        if(!oppBingoTd) return;
+
+        const powerTd = document.createElement("td");
+        powerTd.className = "power-tile-cell";
+        const powerBox = document.createElement("div");
+        powerBox.className = "tile-checks";
+        powerBox.append(
+          makeCheck(i,"powerJ","J"),
+          makeCheck(i,"powerX","X"),
+          makeCheck(i,"powerQ","Q"),
+          makeCheck(i,"powerZ","Z")
+        );
+        powerTd.appendChild(powerBox);
+
+        const blankTd = document.createElement("td");
+        blankTd.className = "blank-tile-cell";
+        const blankBox = document.createElement("div");
+        blankBox.className = "tile-checks";
+        blankBox.append(
+          makeCheck(i,"blank1","?1"),
+          makeCheck(i,"blank2","?2")
+        );
+        blankTd.appendChild(blankBox);
+
+        oppBingoTd.after(powerTd, blankTd);
+      });
+    }
+
+    function fmtPct(n,d){
+      if(!d) return "0.00%";
+      return (n*100/d).toFixed(2) + "%";
+    }
+
+    function tileStats(){
+      try{
+        ensureAllGames();
+        const games = (state.games || []).filter(g => {
+          const my = Number(g.myScore), opp = Number(g.oppScore);
+          return Number.isFinite(my) && Number.isFinite(opp) && (my > 0 || opp > 0);
+        });
+        const n = games.length;
+        const count = f => games.reduce((s,g)=>s+(g[f]?1:0),0);
+        const j=count("powerJ"), x=count("powerX"), q=count("powerQ"), z=count("powerZ");
+        const b1=count("blank1"), b2=count("blank2");
+        const anyPower = games.reduce((s,g)=>s+((g.powerJ||g.powerX||g.powerQ||g.powerZ)?1:0),0);
+        const anyBlank = games.reduce((s,g)=>s+((g.blank1||g.blank2)?1:0),0);
+        const bothBlank = games.reduce((s,g)=>s+((g.blank1&&g.blank2)?1:0),0);
+        const powerTiles = j+x+q+z;
+        const blankTiles = b1+b2;
+        return {
+          n,
+          cards:[
+            ["J Received", fmtPct(j,n)],
+            ["X Received", fmtPct(x,n)],
+            ["Q Received", fmtPct(q,n)],
+            ["Z Received", fmtPct(z,n)],
+            ["Any Big Power", fmtPct(anyPower,n)],
+            ["Blank ≥1", fmtPct(anyBlank,n)],
+            ["Both Blanks", fmtPct(bothBlank,n)],
+            ["Avg Big Power / Game", n ? (powerTiles/n).toFixed(2) : "0.00"],
+            ["Avg Blank / Game", n ? (blankTiles/n).toFixed(2) : "0.00"]
+          ]
+        };
+      }catch(e){
+        return {n:0,cards:[]};
+      }
+    }
+
+    function addTileSummary(){
+      const host = document.getElementById("summaryCards");
+      if(!host) return;
+      host.querySelectorAll(".tile-stat-card,.tile-stats-title").forEach(el=>el.remove());
+
+      const stats = tileStats();
+      const title = document.createElement("div");
+      title.className = "tile-stats-title";
+      title.textContent = "Tile Acquisition Statistics";
+      host.appendChild(title);
+
+      stats.cards.forEach(([label,value])=>{
+        const card = document.createElement("div");
+        card.className = "summary-card tile-stat-card";
+        card.innerHTML = `<div>${label}</div><strong>${value}</strong>`;
+        host.appendChild(card);
+      });
+    }
+
+    // Extend new games with the new fields.
+    try{
+      if(typeof newGame === "function"){
+        const originalNewGame = newGame;
+        newGame = function(){
+          const g = originalNewGame.apply(this, arguments);
+          ensureTileFields(g);
+          return g;
+        };
+      }
+    }catch(e){}
+
+    // After every normal game render, add our two compact checkbox cells.
+    try{
+      if(typeof renderGames === "function"){
+        const originalRenderGames = renderGames;
+        renderGames = function(){
+          const r = originalRenderGames.apply(this, arguments);
+          ensureAllGames();
+          addTileCells();
+          return r;
+        };
+      }
+    }catch(e){}
+
+    // After every normal summary render, append tile acquisition stats.
+    try{
+      if(typeof renderSummary === "function"){
+        const originalRenderSummary = renderSummary;
+        renderSummary = function(){
+          const r = originalRenderSummary.apply(this, arguments);
+          addTileSummary();
+          return r;
+        };
+      }
+    }catch(e){}
+
+    // Make sure fields are captured before Save/Approve/Export JSON.
+    try{
+      if(typeof readInputsToState === "function"){
+        const originalReadInputs = readInputsToState;
+        readInputsToState = function(){
+          const r = originalReadInputs.apply(this, arguments);
+          ensureAllGames();
+          document.querySelectorAll('#gamesBody input[data-tile-field]').forEach(cb=>{
+            const i = Number(cb.dataset.i);
+            if(state.games[i]) state.games[i][cb.dataset.tileField] = cb.checked;
+          });
+          return r;
+        };
+      }
+    }catch(e){}
+
+    // Initial augmentation after app.js has finished loading.
+    ensureAllGames();
+    addTileCells();
+    addTileSummary();
+
+    // Safety net for table rebuilds.
+    const body = document.getElementById("gamesBody");
+    if(body){
+      new MutationObserver(() => {
+        ensureAllGames();
+        addTileCells();
+      }).observe(body,{childList:true,subtree:true});
+    }
+  })();
+  </script>
+
 </body>
 </html>
