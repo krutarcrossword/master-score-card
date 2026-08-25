@@ -7,73 +7,140 @@
   <link rel="preconnect" href="https://cdn.jsdelivr.net">
   <link rel="stylesheet" href="styles.css" />
 
-  <style id="powerTilesStyles">
-    .power-tile-cell, .blank-tile-cell{
-      white-space:nowrap;
-      min-width:150px;
-      text-align:center;
+  
+<style id="powerTilesStyles">
+  .power-tile-cell,
+  .blank-tile-cell{
+    white-space:nowrap;
+    text-align:center;
+    vertical-align:middle;
+    padding-left:4px !important;
+    padding-right:4px !important;
+  }
+
+  .power-tile-cell{
+    width:132px;
+    min-width:132px;
+    max-width:132px;
+  }
+
+  .blank-tile-cell{
+    width:68px;
+    min-width:68px;
+    max-width:68px;
+  }
+
+  .tile-checks{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:5px;
+    flex-wrap:nowrap;
+    width:100%;
+    margin:0;
+    padding:0;
+  }
+
+  .tile-check{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    gap:2px;
+    margin:0;
+    padding:0;
+    font-weight:700;
+    font-size:12px;
+    line-height:1;
+    cursor:pointer;
+    user-select:none;
+    flex:0 0 auto;
+  }
+
+  .tile-check input{
+    width:14px !important;
+    height:14px !important;
+    min-height:0 !important;
+    margin:0 !important;
+    padding:0 !important;
+    accent-color:#16a34a;
+    flex:0 0 auto;
+  }
+
+  .tile-stats-title{
+    grid-column:1/-1;
+    font-weight:800;
+    margin:4px 0 0;
+  }
+
+  #gamesTable th,
+  #gamesTable td{
+    padding-left:6px;
+    padding-right:6px;
+  }
+
+  #gamesTable th:nth-child(8),
+  #gamesTable td:nth-child(8),
+  #gamesTable th:nth-child(9),
+  #gamesTable td:nth-child(9){
+    min-width:86px;
+  }
+
+  #gamesTable th:nth-child(10),
+  #gamesTable td:nth-child(10){
+    width:132px;
+    min-width:132px;
+    max-width:132px;
+  }
+
+  #gamesTable th:nth-child(11),
+  #gamesTable td:nth-child(11){
+    width:68px;
+    min-width:68px;
+    max-width:68px;
+  }
+
+  @media (max-width:600px){
+    .power-tile-cell,
+    .blank-tile-cell{
+      display:block !important;
+      width:100% !important;
+      min-width:0 !important;
+      max-width:none !important;
+      padding:5px 0 !important;
     }
-    .blank-tile-cell{min-width:95px}
+
+    .power-tile-cell::before{
+      content:"Power Tiles";
+      display:block;
+      font-weight:700;
+      margin-bottom:4px;
+    }
+
+    .blank-tile-cell::before{
+      content:"Blanks";
+      display:block;
+      font-weight:700;
+      margin-bottom:4px;
+    }
+
     .tile-checks{
-      display:flex;
-      align-items:center;
-      justify-content:center;
+      justify-content:flex-start;
       gap:8px;
       flex-wrap:nowrap;
     }
+
     .tile-check{
-      display:inline-flex;
-      align-items:center;
-      gap:3px;
-      font-weight:700;
-      font-size:13px;
-      cursor:pointer;
-      user-select:none;
+      font-size:14px;
+      gap:2px;
     }
+
     .tile-check input{
-      width:16px !important;
-      height:16px !important;
-      min-height:0 !important;
-      margin:0;
-      accent-color:#16a34a;
+      width:18px !important;
+      height:18px !important;
     }
-    .tile-stats-title{
-      grid-column:1/-1;
-      font-weight:800;
-      margin:4px 0 0;
-    }
-    @media (max-width:600px){
-      .power-tile-cell, .blank-tile-cell{
-        display:block !important;
-        width:100% !important;
-        min-width:0;
-        padding:7px 0 !important;
-      }
-      .power-tile-cell::before{
-        content:"Power Tiles";
-        display:block;
-        font-weight:700;
-        margin-bottom:5px;
-      }
-      .blank-tile-cell::before{
-        content:"Blanks";
-        display:block;
-        font-weight:700;
-        margin-bottom:5px;
-      }
-      .tile-checks{
-        justify-content:flex-start;
-        gap:16px;
-      }
-      .tile-check{
-        font-size:16px;
-      }
-      .tile-check input{
-        width:20px !important;
-        height:20px !important;
-      }
-    }
-  </style>
+  }
+</style>
+
 
 </head>
 <body>
