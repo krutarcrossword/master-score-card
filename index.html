@@ -267,7 +267,7 @@
     </section>
   </main>
 
-  <footer>MASTER SCORE CARD BY KRUTAR CROSSWORD • v1.1</footer>
+  <footer>MASTER SCORE CARD BY KRUTAR CROSSWORD • v1.2</footer>
 
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
   <script src="app.js"></script>
@@ -313,6 +313,24 @@
           ensureAllGames();
           if(state.games[i]){
             state.games[i][field] = cb.checked;
+
+            // ?1 = exactly one blank, ?2 = both blanks.
+            // They must not be selected together.
+            if(cb.checked && field === "blank1"){
+              state.games[i].blank2 = false;
+              const other = document.querySelector(
+                '#gamesBody input[data-i="' + i + '"][data-tile-field="blank2"]'
+              );
+              if(other) other.checked = false;
+            }
+            if(cb.checked && field === "blank2"){
+              state.games[i].blank1 = false;
+              const other = document.querySelector(
+                '#gamesBody input[data-i="' + i + '"][data-tile-field="blank1"]'
+              );
+              if(other) other.checked = false;
+            }
+
             if(typeof autosave === "function") autosave();
             if(typeof renderSummary === "function") renderSummary();
           }
@@ -379,12 +397,26 @@
         const n = games.length;
         const count = f => games.reduce((s,g)=>s+(g[f]?1:0),0);
         const j=count("powerJ"), x=count("powerX"), q=count("powerQ"), z=count("powerZ");
+
+        // Blank checkboxes mean:
+        // blank1 = received exactly 1 blank in this game
+        // blank2 = received both blanks (2 blanks) in this game
         const b1=count("blank1"), b2=count("blank2");
-        const anyPower = games.reduce((s,g)=>s+((g.powerJ||g.powerX||g.powerQ||g.powerZ)?1:0),0);
-        const anyBlank = games.reduce((s,g)=>s+((g.blank1||g.blank2)?1:0),0);
-        const bothBlank = games.reduce((s,g)=>s+((g.blank1&&g.blank2)?1:0),0);
-        const powerTiles = j+x+q+z;
-        const blankTiles = b1+b2;
+
+        const anyPower = games.reduce(
+          (s,g)=>s+((g.powerJ||g.powerX||g.powerQ||g.powerZ)?1:0),0
+        );
+        const anyBlank = games.reduce(
+          (s,g)=>s+((g.blank1||g.blank2)?1:0),0
+        );
+
+        const powerTiles = j+x+q+z;       // actual J/X/Q/Z received
+        const possiblePowerTiles = n*4;   // 4 Big Power tiles per game
+
+        const bothBlank = b2;             // ?2 means both blanks
+        const blankTiles = b1+(b2*2);     // ?1 = 1 blank, ?2 = 2 blanks
+        const possibleBlankTiles = n*2;   // 2 blanks per game
+
         return {
           n,
           cards:[
@@ -392,9 +424,19 @@
             ["X Received", fmtPct(x,n)],
             ["Q Received", fmtPct(q,n)],
             ["Z Received", fmtPct(z,n)],
+
+            // % of games with at least one Big Power tile
             ["Any Big Power", fmtPct(anyPower,n)],
+
+            // actual Big Power tiles received / all possible Big Power tiles
+            ["Big Power Acquisition", fmtPct(powerTiles,possiblePowerTiles)],
+
             ["Blank ≥1", fmtPct(anyBlank,n)],
             ["Both Blanks", fmtPct(bothBlank,n)],
+
+            // actual blank tiles received / all possible blank tiles
+            ["Blank Acquisition", fmtPct(blankTiles,possibleBlankTiles)],
+
             ["Avg Big Power / Game", n ? (powerTiles/n).toFixed(2) : "0.00"],
             ["Avg Blank / Game", n ? (blankTiles/n).toFixed(2) : "0.00"]
           ]
